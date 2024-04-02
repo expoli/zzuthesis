@@ -19,9 +19,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newif\ifzzu@bachelor\zzu@bachelorfalse
 \newif\ifzzu@master\zzu@masterfalse
+\newif\ifzzu@profmaster\zzu@profmasterfalse
 \newif\ifzzu@doctor\zzu@doctorfalse
 \DeclareOption{bachelor}{\zzu@bachelortrue}
 \DeclareOption{master}{\zzu@mastertrue}
+\DeclareOption{profmaster}{\zzu@profmastertrue}
 \DeclareOption{doctor}{\zzu@doctortrue}
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{ctexbook}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -30,10 +32,12 @@
 \ProcessOptions\relax
 \ifzzu@bachelor\relax\else
   \ifzzu@master\relax\else
-    \ifzzu@doctor\relax\else
-        \ClassError{zzuthesis}%Reporting errors
-                   {You have to specify one of thesis options:%
-                    bachelor, master or doctor.}{}
+    \ifzzu@profmaster\relax\else
+      \ifzzu@doctor\relax\else
+          \ClassError{zzuthesis}%Reporting errors
+                    {You have to specify one of thesis options:%
+                      bachelor, master or doctor.}{}
+      \fi
     \fi
   \fi
 \fi
@@ -131,22 +135,28 @@
   \def\zzu@stuno@title{学号}
   \def\zzu@major@title{专业}
   \def\zzu@department@title{院（系）}
-\else
+  \else
   \def\zzu@schoolcode@title{学校代码}
   \def\zzu@id@title{学号或申请号}
   \def\zzu@secretlevel@title{密级}
   \ifzzu@master
     \def\zzu@subtitle{硕士学位论文}
-  \else
+    \def\zzu@subject@title{学科门类}
+    \def\zzu@major@title{专业名称}
+    \def\zzu@department@title{培养院系}
+  \else\fi
+  \ifzzu@profmaster
+    \def\zzu@subtitle{专业硕士学位论文}
+    \def\zzu@major@title{专业学位名称}
+    \def\zzu@department@title{培养院系}
+  \else\fi
+  \ifzzu@doctor
     \def\zzu@subtitle{博士学位论文}
+    \def\zzu@subject@title{学科门类}
+    \def\zzu@major@title{专业名称}
   \fi
   \def\zzu@author@title{作者姓名}
   \def\zzu@supervisor@title{导师姓名}
-  \def\zzu@subject@title{学科门类}
-  \def\zzu@major@title{专业名称}
-  \ifzzu@master
-    \def\zzu@department@title{培养院系}
-  \else\fi
 \fi
 \def\zzu@cdate@title{完成时间}
 \let\CJK@todaysave=\today
@@ -494,6 +504,10 @@
        \or December\fi\unskip,\ \ \the\year}
 \newcommand\zzu@underline[2][6em]{%
   \hskip\p@\underline{\hb@xt@ #1{\hss#2\hss}}\hskip3\p@}
+\newcommand\zzu@nounderline[2][6em]{%
+	\hskip\p@\hb@xt@ #1{\hss#2\hss}\hskip3\p@}
+\newcommand\zzu@nounderlineleft[2][6em]{%
+	\hspace{.7em}\hb@xt@ #1{#2\hss}\hskip3\p@}
 \newlength{\zzu@title@width}
 \def\zzu@put@title#1{\makebox{\hb@xt@\zzu@title@width{#1}}}
 \newcommand{\zzu@first@titlepage}{%论文中文封面
@@ -548,7 +562,8 @@
         \begin{center}
           {\xiaosan\rmfamily\zzu@submitdate}
         \end{center}
-    \else%研究生学位论文
+    \fi
+    \ifzzu@master%研究生学位论文
       \noindent\begin{minipage}{.49\textwidth}
         \begin{flushleft}
           \includegraphics[width=3.35cm]{zzulogo}
@@ -571,13 +586,129 @@
       \end{minipage}
       \vskip \stretch{1}
       \begin{center}
-        {\includegraphics{zzu}}
+        {\includegraphics[height=1.9cm]{zzu}}
         \par\vskip.6cm
         {\ziju{0.5}\xiaochu\sffamily\zzu@subtitle}
         \vskip \stretch{1}
         \kaishu\erhao[1.5] \zzu@ctitle
         \vskip \stretch{1}
-        \setlength{\zzu@title@width}{4\ccwd}
+        \setlength{\zzu@title@width}{4em}
+        \kaishu\sanhao[1.25]
+        \def\tabcolsep{\p@}%\tabcolsep：tabular环境中两列标准间隔的一半
+        \def\arraystretch{1.5}%\arraystretch表格行距的缩放比例因子（缺省为1）
+        \begin{tabular}{p{\zzu@title@width}l@{}l}
+          \zzu@put@title{\zzu@author@title} &  \zzu@title@sep & 
+            \zzu@underline[150pt]{\zzu@cauthor}
+        \\
+          \zzu@put@title{\zzu@supervisor@title} &  \zzu@title@sep & 
+            \zzu@underline[150pt]{\zzu@csupervisor\hspace{\ccwd}\zzu@protitle}
+        \\ 
+          \zzu@put@title{\zzu@subject@title} &  \zzu@title@sep & 
+            \zzu@underline[150pt]{\zzu@csubject}
+        \\
+          \zzu@put@title{\zzu@major@title} &  \zzu@title@sep & 
+            \zzu@underline[150pt]{\zzu@cmajor}
+        \\
+        \ifzzu@doctor\else
+          \zzu@put@title{\zzu@department@title} &  \zzu@title@sep & 
+            \zzu@underline[150pt]{\zzu@cdepartment}
+        \\
+        \fi
+          \zzu@put@title{\zzu@cdate@title} &  \zzu@title@sep & 
+            \zzu@underline[150pt]{\zzu@cdate}
+        \end{tabular}\\
+        \vskip \stretch{1}
+      \end{center}
+    \fi
+    \ifzzu@profmaster%专业研究生学位论文
+      \noindent\begin{minipage}{.49\textwidth}
+        \begin{flushleft}
+          \includegraphics[width=3.35cm]{zzulogo}
+        \end{flushleft}
+      \end{minipage}
+      \hfill
+      \noindent\begin{minipage}{.49\textwidth}
+        \begin{flushright}
+          \kaishu\sihao
+        \setlength{\zzu@title@width}{6em}
+        \begin{tabular}{p{\zzu@title@width}@{~}l}
+          \zzu@put@title{\zzu@schoolcode@title} & 
+            \zzu@underline[9em]{\zzu@schoolcode}\\[1ex]
+          \zzu@put@title{\zzu@id@title} & 
+            \zzu@underline[9em]{\zzu@id}\\[1ex]
+          \zzu@put@title{\zzu@secretlevel@title} & 
+            \zzu@underline[9em]{\zzu@secretlevel}\\
+          \end{tabular}
+        \end{flushright}
+      \end{minipage}
+      \vskip \stretch{1}
+      \begin{center}
+        {\includegraphics[height=1.9cm]{zzu}}
+        \par\vskip.8cm
+        {\xiaochu\sffamily\zzu@subtitle}
+        \vskip \stretch{1} % 名称后一行
+        \kaishu\erhao[1.5] \zzu@ctitle % 论文题目后三行空白
+        \vskip \stretch{1}
+        \vskip \stretch{1}
+        \vskip \stretch{1}
+        \setlength{\zzu@title@width}{5em} % 专硕专业学位名称较大，需要调整格子大小
+        \kaishu\sanhao[1.25]
+        \def\tabcolsep{\p@}%\tabcolsep：tabular环境中两列标准间隔的一半
+        \def\arraystretch{1.5}%\arraystretch表格行距的缩放比例因子（缺省为1）
+        \begin{tabular}{p{\zzu@title@width}l@{}l}
+          \zzu@put@title{\zzu@author@title} &  \zzu@title@sep & 
+            \zzu@nounderlineleft[150pt]{\zzu@cauthor}
+        \\
+          \zzu@put@title{\zzu@supervisor@title} &  \zzu@title@sep & 
+            \zzu@nounderlineleft[150pt]{\zzu@csupervisor\hspace{\ccwd}\zzu@protitle}
+        % \\ 
+        %   \zzu@put@title{\zzu@subject@title} &  \zzu@title@sep & 
+        %     \zzu@nounderline[150pt]{\zzu@csubject}
+        \\
+          \zzu@put@title{\zzu@major@title} &  \zzu@title@sep & 
+            \zzu@nounderlineleft[150pt]{\zzu@cmajor}
+        \\
+        \ifzzu@doctor\else
+        \zzu@put@title{\zzu@department@title} &  \zzu@title@sep & 
+          \zzu@nounderlineleft[150pt]{\zzu@cdepartment}
+        \\
+        \fi
+          \zzu@put@title{\zzu@cdate@title} &  \zzu@title@sep & 
+            \zzu@nounderlineleft[150pt]{\zzu@cdate}
+        \end{tabular}\\
+        \vskip \stretch{1}
+      \end{center}
+    \fi
+    \ifzzu@doctor%博士研究生学位论文
+      \noindent\begin{minipage}{.49\textwidth}
+        \begin{flushleft}
+          \includegraphics[width=3.35cm]{zzulogo}
+        \end{flushleft}
+      \end{minipage}
+      \hfill
+      \noindent\begin{minipage}{.49\textwidth}
+        \begin{flushright}
+          \kaishu\sihao
+        \setlength{\zzu@title@width}{6em}
+        \begin{tabular}{p{\zzu@title@width}@{~}l}
+          \zzu@put@title{\zzu@schoolcode@title} & 
+            \zzu@underline[9em]{\zzu@schoolcode}\\[1ex]
+          \zzu@put@title{\zzu@id@title} & 
+            \zzu@underline[9em]{\zzu@id}\\[1ex]
+          \zzu@put@title{\zzu@secretlevel@title} & 
+            \zzu@underline[9em]{\zzu@secretlevel}\\
+          \end{tabular}
+        \end{flushright}
+      \end{minipage}
+      \vskip \stretch{1}
+      \begin{center}
+        {\includegraphics[height=1.9cm]{zzu}}
+        \par\vskip.6cm
+        {\ziju{0.5}\xiaochu\sffamily\zzu@subtitle}
+        \vskip \stretch{1}
+        \kaishu\erhao[1.5] \zzu@ctitle
+        \vskip \stretch{1}
+        \setlength{\zzu@title@width}{4em}
         \kaishu\sanhao[1.25]
         \def\tabcolsep{\p@}%\tabcolsep：tabular环境中两列标准间隔的一半
         \def\arraystretch{1.5}%\arraystretch表格行距的缩放比例因子（缺省为1）
